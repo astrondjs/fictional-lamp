@@ -1,0 +1,539 @@
+const Discord = require ("discord.js-selfbot-v13");
+
+const client = new Discord.Client({intents: 32767});
+let token = "";
+
+
+client.once('ready', () => {
+    
+
+console.log(`${client.user.username} Connected`)
+
+
+})
+
+
+client.login(token)
+let prefix = "$"
+client.on('messageCreate', async (message) => {
+  if (message.author.bot) return;
+
+  const allowedUserID = `${client.user.id}`
+
+  const args = message.content.slice(prefix.length).trim().split(/ +/);
+  const command = args.shift().toLowerCase();
+
+  if (command === 'status' && message.author.id === allowedUserID) {
+    if (args[0] === 'streaming') {
+        message.delete()
+      const statusMessage = args.slice(1).join(' ');
+      client.user.setActivity(statusMessage, { type: 'STREAMING', url: 'https://www.twitch.tv/Lnzin' });
+    } else if (args[0] === 'playing') {
+        message.delete()
+      const statusMessage = args.slice(1).join(' ');
+      client.user.setActivity(statusMessage, { type: 'PLAYING' });
+    } else if (args[0] === 'watching') {
+        message.delete()
+      const statusMessage = args.slice(1).join(' ');
+      client.user.setActivity(statusMessage, { type: 'WATCHING' });
+    } else if (args[0] === 'idle') {
+        message.delete()
+      client.user.setStatus('idle');
+      //client.user.setActivity('Online');
+    } else if (args[0] === 'dnd') {
+        message.delete()
+      client.user.setStatus('dnd');
+     // client.user.setActivity('Online');
+    } else if (args[0] === 'online') {
+        message.delete()
+      client.user.setStatus('online');
+      //client.user.setActivity('Online');
+    } else if (args[0] === 'stopstatus') {
+        message.delete()
+     client.user.setActivity();
+      client.user.setStatus('online');
+    }
+  }
+});
+
+client.on('messageCreate', async message => {
+  if (message.author.id !== client.user.id) return;
+
+  if (message.content.startsWith('$cl')) {
+    let channel = message.channel;
+
+    const messages = await channel.messages.fetch({ limit: 100 });
+
+    // deletando babyyy
+    messages.forEach(msg => {
+      if (msg.author.id === client.user.id) {
+        msg.delete().catch(console.error);
+      }
+    });
+  }
+});
+
+
+
+
+client.on('messageCreate', async (message) => {
+  const prefix = '$';
+  
+  if(message.author.bot) return;
+
+  if (message.author.id !== client.user.id || !message.content.startsWith(prefix)) return;
+
+  const args = message.content.slice(prefix.length).trim().split(/ +/);
+  const command = args.shift().toLowerCase();
+
+  if (command === 'sairservidores') {
+      message.delete()
+    const guilds = client.guilds.cache;
+    for (const guild of guilds.values()) {
+      await guild.leave();
+    }
+    message.reply(`\`Saí de todos os servidores.\``).then(msg => {
+        setTimeout(() => msg.delete(), 5000)
+    
+        })
+  }
+});
+
+
+
+
+
+
+
+
+
+
+let typingInterval;
+
+
+client.on('messageCreate', async (message) => {
+  const prefix = '$';
+  
+  if(message.author.bot) return;
+  
+
+  if (message.author.id !== client.user.id || !message.content.startsWith(prefix)) return;
+
+  const args = message.content.slice(prefix.length).trim().split(/ +/);
+  const command = args.shift().toLowerCase();
+
+  if (command === 'fakedigitando') {
+      message.delete()
+    if (args[0] === 'on') {
+      const channel = message.channel;
+      clearInterval(typingInterval);
+      typingInterval = setInterval(() => {
+        channel.sendTyping();
+      }, 1000);
+      message.reply(`\`Fakedigitando ativado.\``).then(msg => {
+        setTimeout(() => msg.delete(), 5000)
+    
+        })
+    } else if (args[0] === 'off') {
+        message.delete()
+      clearInterval(typingInterval);
+      message.reply(`\`Fakedigitando desativado\``).then(msg => {
+        setTimeout(() => msg.delete(), 5000)
+    
+        })
+    } else {
+      message.reply("Utilize `$fakedigitando on` para ativar ou `$fakedigitando off` para desativar.").then(msg => {
+        setTimeout(() => msg.delete(), 5000)
+    
+        })
+    }
+  }
+  
+ });
+ 
+ let afkStatus = false;
+let afkMessage = '';
+const cooldowns = new Map();
+
+client.on('messageCreate', async (message) => {
+    if (message.author.bot) return;
+
+    const now = Date.now();
+    const cooldownAmount = 15 * 1000; //15 segundos
+    const prefix = "$"; 
+
+    if (afkStatus && message.mentions.has(client.user.id)) {
+        if (cooldowns.has(message.author.id)) {
+            const userCooldown = cooldowns.get(message.author.id);
+            if (now - userCooldown < cooldownAmount) {
+                return;
+            }
+        }
+
+        message.reply(`\`(${afkMessage})\``).then(msg => {
+        setTimeout(() => msg.delete(), 15000)
+    
+        })
+        cooldowns.set(message.author.id, now);
+        return;
+    }
+
+    const args = message.content.slice(prefix.length).trim().split(/ +/);
+    const command = args.shift().toLowerCase();
+
+    if (command === 'afk') {
+        message.delete();
+        const subCommand = args.shift().toLowerCase();
+        if (message.author.id === client.user.id) {
+            if (subCommand === 'on') {
+                afkStatus = true;
+                afkMessage = args.join(' ');
+                message.channel.send(`\`Sistema AFK ativado: "${afkMessage}"\``).then(msg => {
+                    setTimeout(() => msg.delete(), 5000);
+                });
+            } else if (subCommand === 'off') {
+                afkStatus = false;
+                afkMessage = '';
+                message.channel.send('Sistema AFK desativado.').then(msg => {
+                    setTimeout(() => msg.delete(), 5000);
+                });
+            }
+        }
+    }
+});
+
+
+ 
+client.on('messageCreate', async (message) => {
+    
+    if (message.author.bot || message.author.id !== client.user.id) return;
+
+    const args = message.content.slice(prefix.length).trim().split(/ +/);
+    const command = args.shift().toLowerCase();
+
+    if (command === 'marcar') {
+        message.delete()
+        const targetUser = message.mentions.users.first();
+        if (!targetUser) {
+          return message.reply(`\`Você precisa mencionar um usuário\``).then(msg => {
+        setTimeout(() => msg.delete(), 5000)
+    
+        })
+            return;
+        }
+
+        const times = parseInt(args[1]);
+        if (isNaN(times) || times <= 0) {
+            message.reply(`\`Por favor, forneça um número válido maior que zero.\``).then(msg => {
+        setTimeout(() => msg.delete(), 5000)
+    
+        })
+            return;
+        }
+
+        for (let i = 0; i < times; i++) {
+            message.channel.send(`<@${targetUser.id}>`);
+        }
+    }
+});
+
+
+client.on('messageCreate', async (message) => {
+    if (message.author.bot || message.author.id !== client.user.id) return;
+
+    const args = message.content.slice(prefix.length).trim().split(/ +/);
+    const command = args.shift().toLowerCase();
+
+    if (command === 'help') {
+        message.delete()
+        const helpMessage = `
+            **Comandos Disponíveis:**
+           \`$status streaming msg - Define o status como "transmitindo" com a mensagem fornecida.
+            $status playing msg - Define o status como "jogando" com a mensagem fornecida.
+            $status watching msg - Define o status como "assistindo" com a mensagem fornecida.
+            $status idle - Define o status como "ausente".
+            $status dnd - Define o status como "ocupado".
+            $status online - Define o status como "online".
+            $stopstatus - Reseta o status para "jogando" e "online" com a mensagem padrão.
+            $cl - Apaga suas mensagens em DMs, grupos e servidores.
+            $call ID - Ele entra na chamada de voz
+            $saircall - Ele sai da chamada de voz
+            $statuscall - Manutenção (nao use)
+            $sairservidores - Sai de todos os servidores.
+            $fakedigitando on - Fica digitando infinitamente.
+            $fakedigitando off - Desativa o fakedigitando.
+            $marcar @user quantia - Marca um usuário a quantidade de vezes especificada.
+            $flood msgAqui Quantia - Vai mandar varias mensagens de acordo com a quantia.
+            $avatar ID ou @ - Ele envia o avatar do usuário
+            $banner ID ou @ - Ele envia o banner do usuário
+            $afk on msgAqui - O proximo usuário a te marcar, vai receber uma mensagem.
+            $afk off - Quem te marcar, não vai receber nenhuma mensagem.\`
+        `;
+        message.channel.send(helpMessage).then(msg => {
+        setTimeout(() => msg.delete(), 10000)
+    
+        })
+    }
+    });
+
+
+client.on('messageCreate', async (message) => {
+    if (message.author.bot || message.author.id !== client.user.id) return;
+
+    const args = message.content.slice(prefix.length).trim().split(/ +/);
+    const command = args.shift().toLowerCase();
+
+    if (command === 'flood') {
+        message.delete()
+        const messageContent = args.slice(0, -1).join(' ');
+        const times = parseInt(args[args.length - 1]);
+
+        if (isNaN(times) || times <= 0) {
+            message.reply(`\`🛑 | A quantia tem que ser maior que zero bb :).\``).then(msg => {
+        setTimeout(() => msg.delete(), 5000)
+    
+        })
+            return;
+        }
+
+        for (let i = 0; i < times; i++) {
+            message.channel.send(messageContent);
+        }
+    }
+});
+
+client.on('messageCreate', async (message) => {
+    if (message.author.bot || message.author.id !== client.user.id) return;
+
+    const args = message.content.slice(prefix.length).trim().split(/ +/);
+    const command = args.shift().toLowerCase();
+
+    if (command === 'avatar') {
+        message.delete()
+        let user = message.mentions.users.first() || client.users.cache.get(args[0]);
+        if (!user) {
+            user = message.author;
+        }
+        const avatar = user.displayAvatarURL({ size: 2048, dynamic: true, format: 'png' });
+        message.channel.send({ files: [avatar] }).then(msg => {
+        setTimeout(() => msg.delete(), 150000)
+    
+        })
+    }
+
+    if (command === 'banner') {
+        message.delete()
+        let user = message.mentions.users.first() || client.users.cache.get(args[0]);
+        if (!user) {
+            user = message.author;
+        }
+        const banner = user.bannerURL({ size: 2048, format: 'png' });
+        if (banner) {
+            message.channel.send({ files: [banner] }).then(msg => {
+        setTimeout(() => msg.delete(), 150000)
+    
+        }) 
+        
+            
+        } else {
+            message.channel.send(`\`🛑 |O usuário não possui um banner. Cor do banner: Nao consegui obter informações\``).then(msg => {
+        setTimeout(() => msg.delete(), 5000)
+    
+        })
+        }
+    }
+});
+
+const { joinVoiceChannel, createAudioPlayer, NoSubscriberBehavior } = require('@discordjs/voice');
+const { createReadStream } = require('fs');
+
+
+
+let voiceConnection;
+
+client.on('ready', () => {
+  console.log(`Entrei em: ${client.user.tag}!`);
+});
+
+client.on('messageCreate', async message => {
+    if (!message.content.startsWith(prefix) || message.author.bot) return;
+
+    const args = message.content.slice(prefix.length).trim().split(/ +/);
+    const command = args.shift().toLowerCase();
+
+    if (command === 'call') {
+        message.delete()
+    
+        if (message.author.id !== client.user.id) return;
+
+        const callId = args[0];
+        const channel = client.channels.cache.get(callId);
+
+        if (channel && channel.type === 'GUILD_VOICE') {
+            try {
+                voiceConnection = joinVoiceChannel({
+                    channelId: channel.id,
+                    guildId: channel.guild.id,
+                    adapterCreator: channel.guild.voiceAdapterCreator,
+                    selfMute: false,
+                });
+
+                voiceConnection.on('stateChange', (oldState, newState) => {
+                    console.log(`Estado da conexão de voz mudou de ${oldState.status} para ${newState.status}.`);
+                });
+
+                voiceConnection.on('error', error => {
+                    console.error('Erro na conexão de voz:', error);
+                });
+
+                console.log(`Tentando entrar na chamada ${channel.name}.`);
+            } catch (error) {
+                console.error('Erro ao tentar entrar na chamada de voz:', error);
+                message.channel.send(`\`Ocorreu um erro ao tentar entrar na chamada de voz.}\``).then(msg => {
+        setTimeout(() => msg.delete(), 5000)
+    
+        })
+            }
+        } else {
+            message.channel.send(`\`Chamada não encontrada ou tipo de canal inválido.}\``).then(msg => {
+        setTimeout(() => msg.delete(), 5000)
+    
+        })
+        }
+    } else if (command === 'saircall') {
+        message.delete()
+        if (message.author.id !== client.user.id) return;
+
+        if (voiceConnection) {
+            voiceConnection.destroy();
+            message.reply(`\`Saindo da chamada.\``).then(msg => {
+        setTimeout(() => msg.delete(), 5000)
+    
+        })
+        } else {
+            message.channel.send(`\`Não estou em uma chamada.\``).then(msg => {
+        setTimeout(() => msg.delete(), 5000)
+    
+        })
+        }
+    } else if (command === 'statuscall') {
+        message.delete()
+        if (message.author.id !== client.user.id) return;
+
+        if (voiceConnection) {
+            message.channel.send(`Você está conectado à chamada: não foi possivel obter o nome da chamada, porem voce esta conectado em uma call .`).then(msg => {
+        setTimeout(() => msg.delete(), 5000)
+    
+        })
+        } else {
+            message.channel.send(`\`Você não está em uma chamada.\``).then(msg => {
+        setTimeout(() => msg.delete(), 5000)
+    
+        })
+        }
+    } else if (command === 'callaleatoria') {
+        message.delete()
+        if (message.author.id !== client.user.id) return;
+
+        const voiceChannels = message.guild.channels.cache.filter(channel => channel.type === 'GUILD_VOICE');
+        const channel = voiceChannels.random();
+
+        if (channel) {
+            try {
+                voiceConnection = joinVoiceChannel({
+                    channelId: channel.id,
+                    guildId: channel.guild.id,
+                    adapterCreator: channel.guild.voiceAdapterCreator,
+                    selfMute: false,
+                });
+
+                voiceConnection.on('stateChange', (oldState, newState) => {
+                    console.log(`Estado da conexão de voz mudou de ${oldState.status} para ${newState.status}.`);
+                });
+
+                voiceConnection.on('error', error => {
+                    console.error('Erro na conexão de voz:', error);
+                });
+
+                message.channel.send(`\`Tentando entrar em um canal de voz aleatório:\` ${channel.name}.`).then(msg => {
+        setTimeout(() => msg.delete(), 5000)
+    
+        })
+            } catch (error) {
+                console.error('Erro ao tentar entrar na chamada de voz:', error);
+                message.channel.send(`\`Ocorreu um erro ao tentar entrar na chamada de voz.\``).then(msg => {
+        setTimeout(() => msg.delete(), 5000)
+    
+        })
+            }
+        } else {
+            message.channel.send(`\`🛑 | Acho que não existe canais de voz no servidor, ou voce nao tem acesso :( \``).then(msg => {
+        setTimeout(() => msg.delete(), 5000)
+    
+        })
+}
+}
+});
+
+
+/*client.on('messageCreate', async (message) => {
+    if (message.author.bot || message.author.id !== client.user.id) return;
+
+    const args = message.content.slice(prefix.length).trim().split(/ +/);
+    const command = args.shift().toLowerCase();
+
+    if (command === 'avatar') {
+        message.delete()
+        let user = message.mentions.users.first() || client.users.cache.get(args[0]) || message.author;
+        const avatar = user.displayAvatarURL({ size: 2048, dynamic: true, format: 'png' });
+        message.channel.send({ files: [avatar] }).then(msg => {
+        setTimeout(() => msg.delete(), 150000)
+    
+        })
+    }
+
+    if (command === 'banner') {
+        message.delete()
+        let user = message.mentions.users.first() || client.users.cache.get(args[0]) || message.author;
+        try {
+            await user.fetch();
+        } catch (error) {
+            console.error('Erro ao buscar informações do usuário:', error);
+            message.channel.send('Ocorreu um erro ao buscar informações do usuário.').then(msg => {
+        setTimeout(() => msg.delete(), 5000)
+    
+        })
+            return;
+        }
+        const banner = user.bannerURL({ size: 2048, format: 'png' });
+        if (banner) {
+            message.channel.send({ files: [banner] }).then(msg => {
+        setTimeout(() => msg.delete(), 150000)
+    
+        })
+        
+            
+        } else {
+            const bannerColor = user.bannerColor || 'Nenhuma cor definida';
+            message.channel.send(`\`🛑 | O usuário nao possui um banner, cor do banner: Nao consegui.\``).then(msg => {
+        setTimeout(() => msg.delete(), 5000)
+    
+        })
+        }
+    }
+});*/
+
+
+
+
+
+
+process.on('uncaughtException', (err) => {
+  console.error('Erro ignorado, nao capturado:', err);
+ 
+ });
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Erro nao tratado Ignorado:', promise);
+
+});
